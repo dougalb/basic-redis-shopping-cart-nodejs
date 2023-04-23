@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+
+  SAM template for BasicRedisShoppingCartNodeJS
+
+Globals:
+  Function:
+    Timeout: 3
+
+Parameters:
+  SubnetIds:
+    Description: 'Required. Subnets with access to REDIS'
+    Type: "List<AWS::EC2::Subnet::Id>"
+  SecurityGroupIds:
+    Description: 'Required. Security groups with access to REDIS'
+    Type: "List<AWS::EC2::SecurityGroup::Id>"
+  RedisEndpointUri:
+    Description: 'Required. Redis cluster node endpoint hostname:port'
+    Type: "String"
+
+Resources:
+  BasicRedisShoppingCartNodeJSFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Environment:
+        Variables:
+          PORT: 3000
+          REDIS_ENDPOINT_URI: !Ref RedisEndpointUri
+      AutoPublishAlias: Live
+      FunctionUrlConfig:
+        AuthType: NONE
+      VpcConfig:
+        SecurityGroupIds: !Ref SecurityGroupIds
+        SubnetIds: !Ref SubnetIds
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+      DockerTag: sam
+
+Outputs:
+  BasicRedisShoppingCartNodeJSFunction:
+    Description: "Basic Redis Shopping Cart NodeJS Lambda Function ARN"
+    Value: !GetAtt BasicRedisShoppingCartNodeJSFunction.Arn
+  BasicRedisShoppingCartNodeJSEndpoint:
+    Description: "Basic Redis Shopping Cart NodeJS Function URL Endpoint"
+    Value: !GetAtt BasicRedisShoppingCartNodeJSFunctionUrl.FunctionUrl
